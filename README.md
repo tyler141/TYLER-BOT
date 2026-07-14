@@ -1,222 +1,145 @@
-# TYLER-BOT — WhatsApp Bot with Web Pairing Portal
+# TYLER-BOT — Advanced WhatsApp Automation Platform
 
-A full-featured WhatsApp bot with an **Ubuntu-styled web pairing portal**, **pairing code** authentication, **Google Gemini AI**, and session management. Built with Baileys (WhatsApp Web API).
+TYLER-BOT is a feature-rich WhatsApp automation system built around the Baileys Web API, a modern pairing experience, and AI-powered command handling. It combines a polished web-based pairing portal, persistent session management, and an expansive command framework for bot owners and communities.
 
-## Features
+## What Makes TYLER-BOT Powerful
 
-### Web Pairing Portal (Ubuntu Style)
-- Beautiful Ubuntu-themed web interface at `http://localhost:3000`
-- Select your country from a dropdown with **all country codes**
-- Enter your WhatsApp number and get a pairing code
-- **Auto-copy** — pairing code is automatically copied to clipboard
-- View all **active sessions** with status (connected/pending/disconnected)
-- Reconnect or delete sessions from the portal
-- Live stats bar showing connected/total/pending sessions
+- A sleek, Ubuntu-inspired web pairing portal for linking WhatsApp accounts without scanning QR codes manually.
+- Secure, persistent session storage with reconnect support and session lifecycle management.
+- AI integrations through Google Gemini for conversational and utility-based commands.
+- A modular command architecture, making the bot easy to extend with new features.
+- Production-style deployment assets for Docker, Heroku, and similar hosting environments.
 
-### Pairing Code
-- No QR code needed — enter your phone number, get a code, and link your WhatsApp.
-- Sessions are stored in Supabase and auto-reconnect on server restart.
+## Core Capabilities
 
-### Google Gemini AI
-- AI commands powered by **Google Gemini** (gemini-1.5-flash model)
-- Get a free API key at https://aistudio.google.com/app/apikey
+### Web Pairing Portal
+The pairing portal is served from the main app entry point and is designed for streamlined device linking.
 
-### Commands (85+)
+Open the portal at:
 
-**Main**
-- `.menu` / `.help` / `.list` — Show all commands
+```text
+http://localhost:3000
+```
 
-**Downloader**
-- `.ytvideo <url>` — YouTube video info
-- `.ytaudio <url>` — YouTube audio info
-- `.play <song>` — Search YouTube
-- `.tiktok <url>` — TikTok URL
-- `.facebook <url>` — Facebook video
-- `.instagram <url>` — Instagram content
-- `.twitter <url>` — Twitter/X video
-- `.img <query>` — Image search
+From the portal you can:
+- Select your country code from a complete list.
+- Enter your WhatsApp number to generate a pairing code.
+- Copy the pairing code automatically.
+- View active sessions and manage reconnection or deletion.
+- Monitor connected, pending, and disconnected session states in real time.
 
-**AI & Tools**
-- `.ai <text>` — Google Gemini AI response
-- `.gpt <text>` — Google Gemini AI response
-- `.gemini <text>` — Google Gemini AI response
-- `.translate <lang> <text>` — Translate text
-- `.weather <city>` — Weather info
-- `.sticker` — Image to sticker
-- `.quote` — Random quote
+### Pairing Flow
+1. Open the portal in your browser.
+2. Choose your country and enter your WhatsApp number.
+3. Generate the pairing code.
+4. Open WhatsApp on your phone.
+5. Go to Settings → Linked Devices → Link a Device.
+6. Choose the phone-number pairing option and paste the code.
 
-**Status & Presence**
-- `.online` / `.offline` — Always online toggle
-- `.autoread <on/off>` — Auto-read messages
-- `.autotype <on/off>` — Auto typing indicator
-- `.autorecord <on/off>` — Auto recording indicator
-- `.autostatus <on/off>` — Auto view status
-- `.autoreact <on/off>` — Auto react to messages
-- `.antiblue <on/off>` — Anti blue tick
+Once linked, the bot will connect automatically and remain available for command execution.
 
-**Group Management**
-- `.grouplink` — Get invite link
-- `.revoke` — Revoke invite link
-- `.kick @user` — Kick member
-- `.add <number>` — Add member
-- `.promote @user` — Promote to admin
-- `.demote @user` — Demote admin
-- `.tagall` — Tag all members
-- `.hidetag <msg>` — Hidden tag
-- `.groupinfo` — Group information
-- `.setpp` — Set group icon
-- `.setname <name>` — Set group name
-- `.setdesc <desc>` — Set group description
-- `.mute` / `.unmute` — Close/open group
-- `.lockgc` — Lock group settings
-- `.infouser @user` — User info
+### AI and Utility Features
+- Google Gemini-powered responses for natural-language queries.
+- Media and downloader tools for platforms such as YouTube, TikTok, Facebook, Instagram, and X.
+- Translation, weather, text-to-speech, calculator, hash, currency conversion, and web lookup utilities.
+- Fun and social commands for entertainment and community engagement.
 
-**Owner Only**
-- `.ping` — Response time
-- `.uptime` — Bot uptime
-- `.restart` — Restart bot
-- `.shutdown` — Shutdown bot
-- `.setpp` — Bot profile pic
-- `.setname` — Bot name
-- `.setbio` — Bot bio
-- `.bc <msg>` — Broadcast all chats
-- `.bcgc <msg>` — Broadcast all groups
-- `.getgroups` — List all groups
-- `.join <link>` — Join group
-- `.leave` — Leave group
-- `.block @user` / `.unblock @user` — Block/unblock
-- `.setprefix <char>` — Change prefix
-- `.status` — Bot status
+### Automation and Bot Controls
+- Presence toggles such as online/offline, auto-read, auto-typing, auto-recording, and auto-react.
+- Group management tools including invite links, member moderation, announcements, and settings controls.
+- Owner-only operations such as broadcast, bot profile changes, session inspection, and bot management commands.
 
-**Settings**
-- `.settings` — Show all settings
-- `.autostatuslike <on/off>` — Auto like status
-- `.anticall <on/off>` — Reject calls
-- `.autobio <on/off>` — Auto update bio
-- `.antidelete <on/off>` — Anti delete messages
-- `.language` — Set language
+## Architecture Overview
 
-**Fun**
-- `.8ball <question>` — Magic 8 ball
-- `.ship @user` — Ship meter
-- `.joke` — Random joke
-- `.meme` — Random meme
-- `.rizz` — Rizz line
-- `.truth` / `.dare` — Truth or dare
-- `.coinflip` — Flip coin
-- `.dice` — Roll dice
-- `.character` — Random character
+TYLER-BOT is structured around a lightweight but extensible stack:
 
-**Utility**
-- `.tts <text>` — Text to speech
-- `.delete` — Delete bot message
-- `.calc <expr>` — Calculator
-- `.shorturl <url>` — Shorten URL
-- `.tempmail` — Temporary email
-- `.uuid` — Generate UUID
-- `.base64 <encode/decode> <text>` — Base64
-- `.hash <text>` — SHA-256 hash
-- `.currency <amt> <from> <to>` — Currency convert
-- `.wikipedia <query>` — Wikipedia search
-- `.google <query>` — Google search
+- Node.js runtime for the server and bot logic.
+- Express for the web interface and API routes.
+- Baileys for WhatsApp session handling and message communication.
+- Supabase for persistent session storage and backend integration.
+- Google Gemini for AI command execution.
 
-### Auto Features
-- Auto Read, Auto Status View/Like, Auto Typing, Auto Recording
-- Always Online, Anti Call, Auto React, Anti Blue Tick
-- Auto Bio, Anti Delete, Auto Save Contacts
+## Environment Configuration
 
-## Remote Deployment Assets Imported
+Create a .env file in the project root and configure the following values:
 
-The project now includes deployment metadata and Heroku/Docker config imported from the remote `Dark-Xploit/CypherX` repository and adapted for `TYLER-BOT`:
-- `Dockerfile`
-- `Procfile`
-- `app.json`
-- `cx-platform.json`
-- `heroku.yml`
+```env
+BOT_NAME=TYLER-BOT
+GEMINI_API_KEY=your_gemini_key
+OWNER_NUMBER=254712345678
+```
 
-These files preserve deployment configuration while keeping the current TYLER-BOT application logic intact.
+You can obtain a Gemini API key from:
 
-## Setup
+```text
+https://aistudio.google.com/app/apikey
+```
+
+## Installation
 
 ### 1. Install dependencies
 ```bash
 npm install
 ```
 
-### 2. Configure
-Edit `.env`:
-```
-BOT_NAME=TYLER-BOT
-GEMINI_API_KEY=your_gemini_key  # Get free: https://aistudio.google.com/app/apikey
-OWNER_NUMBER=254712345678
-```
-
-### 3. Run the bot
+### 2. Start the bot
 ```bash
 npm start
 ```
 
-### 4. Open the pairing portal
-Go to `http://localhost:3000` in your browser.
+### 3. Access the pairing portal
+Open your browser and navigate to:
 
-### 5. Pair with WhatsApp
-1. Select your country from the dropdown
-2. Enter your WhatsApp number
-3. Click "Get Pairing Code"
-4. The code is **auto-copied** to your clipboard
-5. Open WhatsApp → Settings → Linked Devices → Link a Device
-6. Choose "Link with phone number instead"
-7. Paste the code
-
-The bot will connect automatically. Type `.menu` in any chat to see all commands.
+```text
+http://localhost:3000
+```
 
 ## API Endpoints
 
 | Method | Path | Description |
 |--------|------|-------------|
-| GET | `/` | Web pairing portal |
-| GET | `/api/sessions` | List all sessions |
-| POST | `/api/pair` | Generate pairing code |
-| POST | `/api/reconnect` | Reconnect a session |
-| DELETE | `/api/session/:id` | Delete a session |
-| GET | `/api/countries` | List all country codes |
+| GET | / | Main pairing portal |
+| GET | /api/sessions | List active sessions |
+| POST | /api/pair | Generate a pairing code |
+| POST | /api/reconnect | Reconnect a session |
+| DELETE | /api/session/:id | Remove a specific session |
+| GET | /api/countries | Retrieve available country codes |
 
 ## Project Structure
-```
+
+```text
 tyler-bot/
-├── index.js              # Express server + bot manager + API
-├── config.js             # Configuration loader
-├── .env                  # Environment variables
-├── package.json
+├── index.js                  # Express server, bot manager, and API routes
+├── config.js                 # Configuration loader
+├── package.json              # Scripts and dependencies
 ├── public/
-│   └── portal.html       # Ubuntu-styled web pairing portal
+│   └── portal.html           # Web pairing portal interface
 ├── src/
-│   ├── handler.js        # Message handler & command router
-│   ├── data/
-│   │   └── countryCodes.js  # All country calling codes
-│   ├── commands/
-│   │   ├── index.js      # Command aggregator
-│   │   ├── menu.js       # Menu/help commands
-│   │   ├── ai.js         # Google Gemini AI
-│   │   ├── downloader.js # Media downloaders
-│   │   ├── group.js      # Group management
-│   │   ├── owner.js      # Owner-only commands
-│   │   ├── settings.js   # Feature toggles
-│   │   ├── fun.js        # Fun commands
-│   │   └── utility.js    # Utility tools
-│   ├── features/
-│   │   ├── autoFeatures.js  # Auto-read, react, typing, etc.
-│   │   └── antiDelete.js    # Anti-delete handler
-│   └── utils/
-│       └── helpers.js   # Utility functions
-├── sessions/             # Auth sessions (auto-created)
-└── README.md
+│   ├── handler.js            # Message routing and event handling
+│   ├── commands/             # Bot commands by category
+│   ├── data/                 # Static data such as country codes
+│   ├── features/             # Auto-features and moderation helpers
+│   └── utils/                # Helper functions and shared utilities
+├── sessions/                 # Session files and pairing state
+└── README.md                 # Project documentation
 ```
+
+## Deployment Assets
+
+The repository includes deployment-ready files for hosting and scaling:
+
+- Dockerfile
+- Procfile
+- app.json
+- cx-platform.json
+- heroku.yml
 
 ## Requirements
-- Node.js >= 18
-- A WhatsApp account
-- Google Gemini API key (free at https://aistudio.google.com/app/apikey)
 
-## Disclaimer
-This bot is for educational purposes. Use responsibly and comply with WhatsApp's Terms of Service.
+- Node.js 18 or newer
+- A valid WhatsApp account
+- A Google Gemini API key
+
+## Security and Usage Notes
+
+This project is intended for educational, development, and personal automation purposes. Please use it responsibly and comply with WhatsApp’s terms of service and applicable platform policies.
