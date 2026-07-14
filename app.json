@@ -1,0 +1,24 @@
+{
+    "name": "TYLER-BOT",
+    "description": "TYLER-BOT — Full-featured WhatsApp bot with web pairing portal",
+    "logo": "https://i.ibb.co/nqsRcKDB/Xploader4.jpg",
+    "keywords": [],
+    "repository": "",
+    "stack": "heroku-24",
+    "addons": [{
+        "plan": "heroku-postgresql"
+    }],
+    "scripts": {
+        "start": "node index.js"
+    },
+    "env": {
+        "SESSION_ID": {
+            "description": "Optional session identifier. Recommended start with 'TYLER-BOT:~'.",
+            "value": "",
+            "required": false
+        }
+    },
+    "buildpacks": [{
+        "url": "heroku/nodejs"
+    }]
+}
