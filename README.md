@@ -43,6 +43,8 @@ Once linked, the bot will connect automatically and remain available for command
 - Media and downloader tools for platforms such as YouTube, TikTok, Facebook, Instagram, and X.
 - Translation, weather, text-to-speech, calculator, hash, currency conversion, and web lookup utilities.
 - Fun and social commands for entertainment and community engagement.
+- New advanced commands such as .stats, .botinfo, and .remind for health monitoring and task reminders.
+- Smart auto-replies for greetings and appreciation to make the bot feel more interactive.
 
 ### Automation and Bot Controls
 - Presence toggles such as online/offline, auto-read, auto-typing, auto-recording, and auto-react.
@@ -67,6 +69,10 @@ Create a .env file in the project root and configure the following values:
 BOT_NAME=TYLER-BOT
 GEMINI_API_KEY=your_gemini_key
 OWNER_NUMBER=254712345678
+HOST=0.0.0.0
+PORT=3000
+SMART_REPLY=true
+ADVANCED_STATUS=true
 ```
 
 You can obtain a Gemini API key from:
@@ -99,7 +105,9 @@ http://localhost:3000
 | Method | Path | Description |
 |--------|------|-------------|
 | GET | / | Main pairing portal |
+| GET | /health | Check bot health and server status |
 | GET | /api/sessions | List active sessions |
+| GET | /api/servers | Retrieve server and bot health summary |
 | POST | /api/pair | Generate a pairing code |
 | POST | /api/reconnect | Reconnect a session |
 | DELETE | /api/session/:id | Remove a specific session |
