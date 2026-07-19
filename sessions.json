@@ -1,0 +1,83 @@
+[
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-4b3e37",
+    "pairing_code": "QZP8QWL7",
+    "status": "pending",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:26:26.759Z",
+    "updated_at": "2026-07-18T23:26:26.759Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-2009ee",
+    "pairing_code": "N5FKEZCJ",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:19:35.284Z",
+    "updated_at": "2026-07-18T23:22:22.120Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-c39d66",
+    "pairing_code": "FT4RH6SK",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:18:35.996Z",
+    "updated_at": "2026-07-18T23:21:25.837Z"
+  },
+  {
+    "phone_number": "254700000000",
+    "session_id": "tyler-254700000000-ac9411",
+    "pairing_code": "1P8X12SH",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:17:32.739Z",
+    "updated_at": "2026-07-18T23:20:19.128Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-3bf89c",
+    "pairing_code": "L7WW7G2D",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:11:59.396Z",
+    "updated_at": "2026-07-18T23:14:52.977Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-e9b627",
+    "pairing_code": "2XRLBX6S",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:11:04.532Z",
+    "updated_at": "2026-07-18T23:13:53.027Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-87a283",
+    "pairing_code": "7G4NKXCB",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:09:26.785Z",
+    "updated_at": "2026-07-18T23:12:12.949Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-9e9ae0",
+    "pairing_code": "PPXGNAEL",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:02:37.187Z",
+    "updated_at": "2026-07-18T23:05:24.171Z"
+  },
+  {
+    "phone_number": "254713019045",
+    "session_id": "tyler-254713019045-8b18ca",
+    "pairing_code": "6L2XBBGL",
+    "status": "logged_out",
+    "bot_name": "TYLER-BOT",
+    "created_at": "2026-07-18T23:01:02.275Z",
+    "updated_at": "2026-07-18T23:03:51.025Z"
+  }
+]

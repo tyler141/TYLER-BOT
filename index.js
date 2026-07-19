@@ -29,6 +29,7 @@ fs.ensureDirSync(SESSIONS_BASE);
 const LOCAL_SESSIONS_FILE = path.join(__dirname, 'sessions.json');
 const bots = new Map();
 const pairingResolvers = new Map();
+const pairingStates = new Map();
 
 const app = express();
 app.use(express.json());
@@ -137,6 +138,83 @@ function normalizePhoneNumber(value) {
     return value.toString().replace(/[^0-9]/g, '');
 }
 
+function getPairingState(sessionId) {
+    let state = pairingStates.get(sessionId);
+    if (!state) {
+        state = {
+            sessionId,
+            phoneNumber: '',
+            code: '',
+            status: 'pending',
+            lastCodeAt: 0,
+            refreshTimer: null,
+            refreshIntervalMs: 30000,
+            codeGenerationInFlight: false,
+        };
+        pairingStates.set(sessionId, state);
+    }
+    return state;
+}
+
+function clearPairingRefresh(sessionId) {
+    const state = pairingStates.get(sessionId);
+    if (!state || !state.refreshTimer) return;
+    clearTimeout(state.refreshTimer);
+    state.refreshTimer = null;
+}
+
+async function refreshPairingCode(sessionId, sock, phoneNumber) {
+    const state = getPairingState(sessionId);
+    if (state.codeGenerationInFlight) {
+        return state.code;
+    }
+
+    state.phoneNumber = phoneNumber;
+    state.status = 'pending';
+    state.codeGenerationInFlight = true;
+
+    try {
+        const code = await sock.requestPairingCode(phoneNumber);
+        state.code = code;
+        state.lastCodeAt = Date.now();
+
+        const resolver = pairingResolvers.get(sessionId);
+        if (resolver) {
+            resolver.resolve(code);
+            pairingResolvers.delete(sessionId);
+        }
+
+        return code;
+    } finally {
+        state.codeGenerationInFlight = false;
+    }
+}
+
+function schedulePairingRefresh(sessionId, sock, phoneNumber) {
+    const state = getPairingState(sessionId);
+    if (state.status === 'connected' || state.status === 'logged_out') return;
+
+    clearPairingRefresh(sessionId);
+
+    state.refreshTimer = setTimeout(async() => {
+        try {
+            if (state.status === 'connected' || state.status === 'logged_out') return;
+            const now = Date.now();
+            const shouldRefresh = !state.code || (now - state.lastCodeAt) >= state.refreshIntervalMs;
+            if (!shouldRefresh) {
+                schedulePairingRefresh(sessionId, sock, phoneNumber);
+                return;
+            }
+            await refreshPairingCode(sessionId, sock, phoneNumber);
+            console.log(chalk.yellow(`[PAIRING ${sessionId}] refreshed pairing code`));
+            schedulePairingRefresh(sessionId, sock, phoneNumber);
+        } catch (err) {
+            console.error(chalk.red(`[PAIRING ${sessionId}] refresh failed: ${err.message}`));
+            schedulePairingRefresh(sessionId, sock, phoneNumber);
+        }
+    }, state.refreshIntervalMs);
+}
+
 // ─── Simple in-memory message store (replaces makeInMemoryStore) ──
 class MessageStore {
     constructor() {
@@ -148,7 +226,7 @@ class MessageStore {
     bind(ev) {
         ev.on('messages.upsert', ({ messages }) => {
             for (const msg of messages) {
-                if (!msg.key ?.remoteJid) continue;
+                if (!msg.key || !msg.key.remoteJid) continue;
                 const jid = msg.key.remoteJid;
                 if (!this.messages.has(jid)) this.messages.set(jid, new Map());
                 this.messages.get(jid).set(msg.key.id, msg);
@@ -169,7 +247,8 @@ class MessageStore {
     }
 
     async loadMessage(jid, id) {
-        return this.messages.get(jid) ?.get(id) || undefined;
+        const chatMessages = this.messages.get(jid);
+        return chatMessages ? chatMessages.get(id) : undefined;
     }
 
     getAllChats() {
@@ -204,7 +283,7 @@ async function startBot(sessionId, phoneNumber) {
         fetchLatestProfileSnapshot: false,
         getMessage: async(key) => {
             const msg = await store.loadMessage(key.remoteJid, key.id);
-            return msg ?.message || undefined;
+            return msg && msg.message ? msg.message : undefined;
         },
     });
 
@@ -215,30 +294,26 @@ async function startBot(sessionId, phoneNumber) {
     // ── Pairing code flow ──
     // When the QR event fires, the WebSocket is connected and ready for auth.
     // That's the moment to request a pairing code instead of showing a QR.
-    let pairingCodeRequested = false;
-
     sock.ev.on('connection.update', async(update) => {
         const { connection, lastDisconnect, qr } = update;
 
         if (qr && !sock.authState.creds.registered && phoneNumber) {
-            pairingCodeRequested = true;
+            const state = getPairingState(sessionId);
+            const shouldRequest = !state.code || (Date.now() - state.lastCodeAt) >= state.refreshIntervalMs;
+            if (!shouldRequest) {
+                console.log(chalk.gray(`[BOT ${sessionId}] Reusing existing pairing code for ${phoneNumber}...`));
+                return;
+            }
+
             console.log(chalk.gray(`[BOT ${sessionId}] WebSocket connected, requesting pairing code...`));
             try {
                 await new Promise((r) => setTimeout(r, 500));
-                const code = await sock.requestPairingCode(phoneNumber);
+                const code = await refreshPairingCode(sessionId, sock, phoneNumber);
                 const formatted = code.match(/.{1,4}/g).join('-');
                 console.log(chalk.green(`[PAIRING] ${phoneNumber} → Code: ${formatted}`));
-
-                const resolver = pairingResolvers.get(sessionId);
-                if (resolver) {
-                    resolver.resolve(code);
-                    pairingResolvers.delete(sessionId);
-                }
+                schedulePairingRefresh(sessionId, sock, phoneNumber);
             } catch (err) {
                 console.error(chalk.red(`[PAIRING ${sessionId}] requestPairingCode failed: ${err.message}`));
-                // Don't reject on requestPairingCode failure — the socket may have dropped
-                // momentarily. Reset the flag so the next QR event can retry.
-                pairingCodeRequested = false;
             }
         }
 
@@ -247,20 +322,23 @@ async function startBot(sessionId, phoneNumber) {
         }
 
         if (connection === 'close') {
-            const statusCode = lastDisconnect ?.error ?.output ?.statusCode;
+            const statusCode = lastDisconnect && lastDisconnect.error && lastDisconnect.error.output && lastDisconnect.error.output.statusCode;
             const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
+            const isPermanent = statusCode === DisconnectReason.loggedOut;
 
             console.log(chalk.red(`[BOT ${sessionId}] Closed (code=${statusCode}). Reconnect: ${shouldReconnect}`));
 
             const bot = bots.get(sessionId);
             if (bot) bot.status = 'disconnected';
+            const state = getPairingState(sessionId);
+            state.status = isPermanent ? 'logged_out' : 'disconnected';
+            clearPairingRefresh(sessionId);
             await dbUpdateSession(sessionId, { status: 'disconnected' });
 
             // Only reject the pairing promise on loggedOut (permanent). All other codes —
             // including undefined/unidentified, which happens when the WebSocket drops
             // before the handshake completes — are treated as transient so the auto-reconnect
             // can retry the pairing code request.
-            const isPermanent = statusCode === DisconnectReason.loggedOut;
 
             if (isPermanent) {
                 const resolver = pairingResolvers.get(sessionId);
@@ -288,12 +366,16 @@ async function startBot(sessionId, phoneNumber) {
         if (connection === 'open') {
             const bot = bots.get(sessionId);
             if (bot) bot.status = 'connected';
+            const state = getPairingState(sessionId);
+            state.status = 'connected';
+            clearPairingRefresh(sessionId);
             await dbUpdateSession(sessionId, {
                 status: 'connected',
                 connected_at: new Date().toISOString(),
             });
-            const botNumber = sock.user ?.id ?.split(':')[0] || phoneNumber || 'unknown';
-            console.log(chalk.green(`[BOT ${sessionId}] Connected as ${sock.user?.name || 'TYLER-BOT'} (${botNumber})`));
+            const botNumber = (sock.user && sock.user.id ? sock.user.id.split(':')[0] : null) || phoneNumber || 'unknown';
+            const botName = sock.user && sock.user.name ? sock.user.name : 'TYLER-BOT';
+            console.log(chalk.green(`[BOT ${sessionId}] Connected as ${botName} (${botNumber})`));
             await applyAutoFeatures(sock);
             await notifyOwnerOnPairing(sock, phoneNumber, sessionId);
         }
@@ -344,8 +426,8 @@ async function startBot(sessionId, phoneNumber) {
 async function notifyOwnerOnPairing(sock, phoneNumber, sessionId) {
     try {
         const ownerJid = `${config.ownerNumber}@s.whatsapp.net`;
-        const botNumber = sock.user ?.id ?.split(':')[0] || phoneNumber || 'unknown';
-        const botName = sock.user ?.name || config.botName;
+        const botNumber = (sock.user && sock.user.id ? sock.user.id.split(':')[0] : null) || phoneNumber || 'unknown';
+        const botName = sock.user && sock.user.name ? sock.user.name : config.botName;
         const time = new Date().toLocaleString();
 
         const notification =
@@ -396,9 +478,53 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'portal.html'));
 });
 
+app.get('/health', async(req, res) => {
+    const sessions = await dbGetSessions();
+    res.json({
+        success: true,
+        online: true,
+        botName: config.botName,
+        uptime: process.uptime(),
+        connectedBots: bots.size,
+        totalSessions: sessions.length,
+        host: HOST,
+        port: PORT,
+    });
+});
+
+app.get('/api/servers', async(req, res) => {
+    const sessions = await dbGetSessions();
+    res.json({
+        success: true,
+        host: HOST,
+        port: PORT,
+        botName: config.botName,
+        connectedBots: bots.size,
+        totalSessions: sessions.length,
+        status: 'healthy',
+    });
+});
+
 app.get('/api/sessions', async(req, res) => {
     const sessions = await dbGetSessions();
     res.json({ success: true, sessions });
+});
+
+app.get('/api/pairing/:sessionId', (req, res) => {
+    const { sessionId } = req.params;
+    const state = pairingStates.get(sessionId);
+
+    if (!state) {
+        return res.json({ success: false, error: 'Session not found' });
+    }
+
+    res.json({
+        success: true,
+        sessionId,
+        code: state.code || '',
+        status: state.status,
+        refreshIntervalMs: state.refreshIntervalMs,
+    });
 });
 
 app.post('/api/pair', async(req, res) => {
@@ -426,6 +552,10 @@ app.post('/api/pair', async(req, res) => {
     }
 
     const sessionId = `tyler-${cleanPhone}-${crypto.randomBytes(3).toString('hex')}`;
+    const pairingState = getPairingState(sessionId);
+    pairingState.phoneNumber = cleanPhone;
+    pairingState.status = 'pending';
+    pairingState.code = '';
 
     const codePromise = new Promise((resolve, reject) => {
         pairingResolvers.set(sessionId, { resolve, reject });
@@ -448,7 +578,7 @@ app.post('/api/pair', async(req, res) => {
         ]);
 
         await dbCreateSession(cleanPhone, sessionId, pairingCode);
-        res.json({ success: true, code: pairingCode, sessionId });
+        res.json({ success: true, code: pairingCode, sessionId, refreshIntervalMs: 30000 });
     } catch (err) {
         console.error(chalk.red(`[API] Pairing failed for ${cleanPhone}: ${err.message}`));
         if (bots.has(sessionId)) {
@@ -457,6 +587,8 @@ app.post('/api/pair', async(req, res) => {
         }
         try { await fs.remove(path.join(SESSIONS_BASE, sessionId)); } catch (_) {}
         pairingResolvers.delete(sessionId);
+        clearPairingRefresh(sessionId);
+        pairingStates.delete(sessionId);
         res.json({ success: false, error: `Failed to generate pairing code: ${err.message}` });
     }
 });
@@ -476,6 +608,12 @@ app.post('/api/reconnect', async(req, res) => {
         } catch (_) {}
         bots.delete(sessionId);
     }
+
+    const pairingState = getPairingState(sessionId);
+    pairingState.phoneNumber = session.phone_number;
+    pairingState.status = 'pending';
+    pairingState.code = '';
+    clearPairingRefresh(sessionId);
 
     await startBot(sessionId, session.phone_number);
     await dbUpdateSession(sessionId, { status: 'pending' });
@@ -498,6 +636,8 @@ app.delete('/api/session/:sessionId', async(req, res) => {
     try { await fs.remove(sessionDir); } catch (_) {}
 
     await dbDeleteSession(sessionId);
+    clearPairingRefresh(sessionId);
+    pairingStates.delete(sessionId);
 
     res.json({ success: true });
 });
@@ -509,8 +649,9 @@ app.get('/api/countries', (req, res) => {
 
 // ─── Boot ───────────────────────────────────────────────────────
 const PORT = process.env.PORT && process.env.PORT !== '9091' ? parseInt(process.env.PORT) : 3000;
+const HOST = process.env.HOST || '0.0.0.0';
 
-const server = app.listen(PORT, async() => {
+const server = app.listen(PORT, HOST, async() => {
     console.log(chalk.cyan('╔══════════════════════════════════════════╗'));
     console.log(chalk.cyan('║') + chalk.bold.white('         TYLER-BOT  Pairing Portal        ') + chalk.cyan('║'));
     console.log(chalk.cyan('╠══════════════════════════════════════════╣'));

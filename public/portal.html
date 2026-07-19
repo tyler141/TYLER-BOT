@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TYLER-BOT — WhatsApp Pairing Portal</title>
     <style>
-     :root {
+         :root {
             --bg: #020814;
             --panel: rgba(12, 24, 50, 0.92);
             --panel-border: rgba(99, 176, 255, 0.16);
@@ -457,236 +457,256 @@
             color: #fda4af;
         }
         
-        font-size: 0.78rem;
-        margin-bottom: 10px;
-    }
-    .pairing-code {
-        font-family: 'Space Mono', monospace;
-        font-size: clamp(2rem, 3vw, 2.8rem);
-        letter-spacing: 0.36em;
-        line-height: 1.05;
-        color: #a1e8ff;
-        margin: 10px 0 14px;
-        cursor: pointer;
-    }
-    .copy-hint {
-        color: #a2c7ff;
-        font-size: 0.88rem;
-        margin-top: 8px;
-    }
-    .pairing-steps {
-        list-style: none;
-        margin-top: 20px;
-        padding-left: 0;
-        color: var(--muted);
-        font-size: 0.95rem;
-        line-height: 1.8;
-    }
-    .pairing-steps li {
-        position: relative;
-        padding-left: 24px;
-        margin-bottom: 12px;
-    }
-    .pairing-steps li::before {
-        content: '•';
-        position: absolute;
-        left: 0;
-        top: 0;
-        color: var(--accent);
-    }
-    .sessions-list {
-        display: grid;
-        gap: 16px;
-        max-height: 560px;
-        overflow-y: auto;
-        padding-right: 6px;
-    }
-    .sessions-list::-webkit-scrollbar {
-        width: 6px;
-    }
-    .sessions-list::-webkit-scrollbar-thumb {
-        background: rgba(69, 168, 255, 0.24);
-        border-radius: 999px;
-    }
-    .session-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 16px;
-        padding: 18px;
-        border-radius: 22px;
-        border: 1px solid rgba(69, 168, 255, 0.12);
-        background: rgba(5, 12, 26, 0.96);
-        transition: transform 0.2s, border-color 0.2s;
-    }
-    .session-item:hover {
-        transform: translateY(-1px);
-        border-color: rgba(69, 168, 255, 0.24);
-    }
-    .session-avatar {
-        width: 48px;
-        height: 48px;
-        border-radius: 50%;
-        display: grid;
-        place-items: center;
-        font-weight: 800;
-        background: linear-gradient(135deg, #2bb7ff, #7ce6ff);
-        color: #041325;
-        flex-shrink: 0;
-    }
-    .session-info {
-        flex: 1;
-        min-width: 0;
-    }
-    .session-phone {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #f2f8ff;
-        margin-bottom: 6px;
-    }
-    .session-meta {
-        font-size: 0.88rem;
-        color: #94b2e4;
-    }
-    .session-actions {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 12px;
-    }
-    .session-actions button {
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        background: rgba(255, 255, 255, 0.05);
-        color: #dbe7ff;
-        font-size: 0.84rem;
-        padding: 10px 14px;
-        border-radius: 16px;
-        cursor: pointer;
-        transition: transform 0.2s, background-color 0.2s;
-    }
-    .session-actions button:hover {
-        transform: translateY(-1px);
-        background: rgba(69, 168, 255, 0.14);
-    }
-    .session-actions .btn-danger:hover {
-        background: rgba(255, 123, 123, 0.16);
-        color: #ffb4b4;
-        border-color: rgba(255, 123, 123, 0.28);
-    }
-    .session-status {
-        padding: 8px 14px;
-        border-radius: 999px;
-        font-size: 0.76rem;
-        text-transform: uppercase;
-        letter-spacing: 0.18em;
-        white-space: nowrap;
-        font-weight: 700;
-    }
-    .status-connected {
-        background: rgba(77, 242, 215, 0.1);
-        color: #8dfff4;
-        border: 1px solid rgba(77, 242, 215, 0.18);
-    }
-    .status-pending {
-        background: rgba(255, 209, 102, 0.12);
-        color: #ffe7a1;
-        border: 1px solid rgba(255, 209, 102, 0.2);
-    }
-    .status-disconnected {
-        background: rgba(255, 123, 123, 0.12);
-        color: #ffb4b4;
-        border: 1px solid rgba(255, 123, 123, 0.2);
-    }
-    .status-logged_out {
-        background: rgba(148, 163, 184, 0.16);
-        color: #d8e3ff;
-        border: 1px solid rgba(148, 163, 184, 0.22);
-    }
-    .empty-sessions {
-        text-align: center;
-        padding: 34px 18px;
-        color: #7a8fbf;
-        font-size: 0.95rem;
-    }
-    .toast {
-        position: fixed;
-        bottom: 28px;
-        left: 50%;
-        transform: translateX(-50%) translateY(120px);
-        background: rgba(7, 18, 42, 0.96);
-        color: #eef6ff;
-        padding: 14px 24px;
-        border-radius: 20px;
-        box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
-        border: 1px solid rgba(69, 168, 255, 0.16);
-        z-index: 40;
-        transition: transform 0.25s ease;
-    }
-    .toast.show {
-        transform: translateX(-50%) translateY(0);
-    }
-    .toast.success {
-        border-left: 4px solid #4df2d7;
-    }
-    .toast.error {
-        border-left: 4px solid #ff7b7b;
-    }
-    @media (max-width: 1100px) {
-        .hero {
-            flex-direction: column;
-        }
-        
-        .hero-stats {
-            width: 100%;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-        }
-        
-        .layout-grid {
-            grid-template-columns: 1fr;
-        }
-    }
-    @media (max-width: 760px) {
-        .page-shell {
-            padding: 24px 16px 40px;
-        }
-        
-        .hero-stats {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-        }
-        
-        .hero-copy h1 {
-            font-size: 2.6rem;
-        }
-        
         .pairing-code {
-            font-size: 2rem;
-            letter-spacing: 0.32em;
+            font-family: 'Space Mono', monospace;
+            font-size: clamp(2rem, 3vw, 2.8rem);
+            letter-spacing: 0.36em;
+            line-height: 1.05;
+            color: #a1e8ff;
+            margin: 10px 0 14px;
+            cursor: pointer;
+        }
+        
+        .copy-hint {
+            color: #a2c7ff;
+            font-size: 0.88rem;
+            margin-top: 8px;
+        }
+        
+        .pairing-steps {
+            list-style: none;
+            margin-top: 20px;
+            padding-left: 0;
+            color: var(--muted);
+            font-size: 0.95rem;
+            line-height: 1.8;
+        }
+        
+        .pairing-steps li {
+            position: relative;
+            padding-left: 24px;
+            margin-bottom: 12px;
+        }
+        
+        .pairing-steps li::before {
+            content: '•';
+            position: absolute;
+            left: 0;
+            top: 0;
+            color: var(--accent);
+        }
+        
+        .sessions-list {
+            display: grid;
+            gap: 16px;
+            max-height: 560px;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+        
+        .sessions-list::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        .sessions-list::-webkit-scrollbar-thumb {
+            background: rgba(69, 168, 255, 0.24);
+            border-radius: 999px;
+        }
+        
+        .session-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            padding: 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(69, 168, 255, 0.12);
+            background: rgba(5, 12, 26, 0.96);
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        
+        .session-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(69, 168, 255, 0.24);
+        }
+        
+        .session-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            font-weight: 800;
+            background: linear-gradient(135deg, #2bb7ff, #7ce6ff);
+            color: #041325;
+            flex-shrink: 0;
+        }
+        
+        .session-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .session-phone {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #f2f8ff;
+            margin-bottom: 6px;
+        }
+        
+        .session-meta {
+            font-size: 0.88rem;
+            color: #94b2e4;
         }
         
         .session-actions {
-            justify-content: flex-start;
-        }
-    }
-    @keyframes orbit {
-        from {
-            transform: rotate(0deg);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
         }
         
-        to {
-            transform: rotate(360deg);
-        }
-    }
-    @keyframes glowPulse {
-        0%,
-        100% {
-            opacity: 0.5;
-            transform: scale(1);
+        .session-actions button {
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            color: #dbe7ff;
+            font-size: 0.84rem;
+            padding: 10px 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: transform 0.2s, background-color 0.2s;
         }
         
-        50% {
-            opacity: 0.22;
-            transform: scale(1.08);
+        .session-actions button:hover {
+            transform: translateY(-1px);
+            background: rgba(69, 168, 255, 0.14);
         }
-    }
+        
+        .session-actions .btn-danger:hover {
+            background: rgba(255, 123, 123, 0.16);
+            color: #ffb4b4;
+            border-color: rgba(255, 123, 123, 0.28);
+        }
+        
+        .session-status {
+            padding: 8px 14px;
+            border-radius: 999px;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.18em;
+            white-space: nowrap;
+            font-weight: 700;
+        }
+        
+        .status-connected {
+            background: rgba(77, 242, 215, 0.1);
+            color: #8dfff4;
+            border: 1px solid rgba(77, 242, 215, 0.18);
+        }
+        
+        .status-pending {
+            background: rgba(255, 209, 102, 0.12);
+            color: #ffe7a1;
+            border: 1px solid rgba(255, 209, 102, 0.2);
+        }
+        
+        .status-disconnected {
+            background: rgba(255, 123, 123, 0.12);
+            color: #ffb4b4;
+            border: 1px solid rgba(255, 123, 123, 0.2);
+        }
+        
+        .status-logged_out {
+            background: rgba(148, 163, 184, 0.16);
+            color: #d8e3ff;
+            border: 1px solid rgba(148, 163, 184, 0.22);
+        }
+        
+        .empty-sessions {
+            text-align: center;
+            padding: 34px 18px;
+            color: #7a8fbf;
+            font-size: 0.95rem;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%) translateY(120px);
+            background: rgba(7, 18, 42, 0.96);
+            color: #eef6ff;
+            padding: 14px 24px;
+            border-radius: 20px;
+            box-shadow: 0 28px 80px rgba(0, 0, 0, 0.28);
+            border: 1px solid rgba(69, 168, 255, 0.16);
+            z-index: 40;
+            transition: transform 0.25s ease;
+        }
+        
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+        
+        .toast.success {
+            border-left: 4px solid #4df2d7;
+        }
+        
+        .toast.error {
+            border-left: 4px solid #ff7b7b;
+        }
+        
+        @media (max-width: 1100px) {
+            .hero {
+                flex-direction: column;
+            }
+            .hero-stats {
+                width: 100%;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+            .layout-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 760px) {
+            .page-shell {
+                padding: 24px 16px 40px;
+            }
+            .hero-stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .hero-copy h1 {
+                font-size: 2.6rem;
+            }
+            .pairing-code {
+                font-size: 2rem;
+                letter-spacing: 0.32em;
+            }
+            .session-actions {
+                justify-content: flex-start;
+            }
+        }
+        
+        @keyframes orbit {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes glowPulse {
+            0%,
+            100% {
+                opacity: 0.5;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.22;
+                transform: scale(1.08);
+            }
+        }
     </style>
 </head>
 
@@ -769,7 +789,7 @@
                         <div class="label">Secure Code</div>
                         <div class="pairing-status" id="pairingStatus">Enter your phone number and generate a code.</div>
                         <div class="pairing-code" id="pairingCode" onclick="copyCode()">----</div>
-                        <div class="copy-hint">Tap the code to copy it automatically</div>
+                        <div class="copy-hint">Tap the code to copy it automatically. The code refreshes every 30 seconds until it connects.</div>
                         <button class="btn btn-secondary" onclick="copyCode()">Copy Code</button>
                         <ol class="pairing-steps">
                             <li>Open WhatsApp and go to linked devices</li>
@@ -801,6 +821,7 @@
             `${window.location.protocol}//${window.location.host}` :
             'http://localhost:3000';
         let currentCode = '';
+        let pairingRefreshTimer = null;
 
         async function loadCountries() {
             const sel = document.getElementById('countrySelect');
@@ -916,6 +937,7 @@
                     const formatted = data.code.match(/.{1,4}/g).join('-');
                     document.getElementById('pairingCode').textContent = formatted;
                     updatePairingStatus('Pairing code generated. Follow WhatsApp steps below.', 'success');
+                    startPairingCodeRefresh(data.sessionId);
                     showToast('Pairing code generated!', 'success');
 
                     // Auto-copy to clipboard
@@ -1070,6 +1092,41 @@
             setTimeout(() => t.classList.remove('show'), 3000);
         }
 
+        function clearPairingRefreshTimer() {
+            if (pairingRefreshTimer) {
+                clearInterval(pairingRefreshTimer);
+                pairingRefreshTimer = null;
+            }
+        }
+
+        async function refreshPairingCode(sessionId) {
+            if (!sessionId) return;
+            try {
+                const res = await fetch(`${API_BASE}/api/pairing/${sessionId}`);
+                const data = await res.json();
+                if (!data.success || !data.code) return;
+                if (data.status === 'connected' || data.status === 'logged_out') {
+                    clearPairingRefreshTimer();
+                    return;
+                }
+                if (data.code !== currentCode) {
+                    currentCode = data.code;
+                    const formatted = data.code.match(/.{1,4}/g).join('-');
+                    document.getElementById('pairingCode').textContent = formatted;
+                    updatePairingStatus('Pairing code refreshed. Enter the latest code in WhatsApp.', 'pending');
+                    showToast('Pairing code refreshed', 'success');
+                }
+            } catch (e) {}
+        }
+
+        function startPairingCodeRefresh(sessionId) {
+            clearPairingRefreshTimer();
+            if (!sessionId) return;
+            pairingRefreshTimer = setInterval(() => {
+                refreshPairingCode(sessionId);
+            }, 30000);
+        }
+
         function pollConnectionStatus(sessionId) {
             let pollCount = 0;
             const maxPolls = 60;
@@ -1082,11 +1139,13 @@
                     const session = (data.sessions || []).find(s => s.session_id === sessionId);
                     if (session) {
                         if (session.status === 'connected') {
+                            clearPairingRefreshTimer();
                             showToast('Bot connected successfully!', 'success');
                             loadSessions();
                             return;
                         }
                         if (session.status === 'disconnected' || session.status === 'logged_out') {
+                            clearPairingRefreshTimer();
                             showToast('Pairing failed. Try again.', 'error');
                             loadSessions();
                             return;
